@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mensaje Secreto</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+    background: linear-gradient(to bottom right, #ffdde1, #ee9ca7);
+  }
+
+  #inicio, #carta {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    max-width: 600px;
+    margin: 20px auto;
+  }
+
+  input {
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #ff4d6d;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover { background: #e63950; }
+
+  #mensaje {
+    margin-top: 10px;
+    color: #e63950;
+    font-weight: bold;
+  }
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+  }
+
+  .error { animation: shake 0.4s ease; border: 2px solid #ff4d6d; background: #ffe6eb; }
+
+  .heart {
+    position: fixed;
+    top: -20px;
+    font-size: 24px;
+    animation: fall 4s linear forwards;
+    z-index: 1;
+  }
+
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+
+  #carta p {
+    white-space: pre-line;
+    text-align: left;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div id="inicio">
+  <h2>💌 Ingresa tu nombre para descubrir el mensaje secreto</h2>
+  <input type="text" id="nombre" placeholder="Tu nombre...">
+  <br>
+  <button onclick="verificar()">Entrar</button>
+  <p id="mensaje"></p>
+</div>
+
+<div id="carta" style="display:none;">
+  <h2>✨ Mensaje Secreto ✨</h2>
+  <p id="texto"></p>
+</div>
+
+<script>
+  // Nombres especiales
+  const nombresEspeciales = ["genesis", "isis", "britney"];
+
+  // Otros nombres válidos
+  const nombresAleatorios = ["juan", "maria", "pedro", "ana", "carlos", "valentina", "nathalia", "camila", "sofia", "mariana",
+    "fernanda", "diana", "paola", "alejandra", "daniela",
+    "juliana", "karen", "angela", "adriana", "carolina",
+    "veronica", "stephanie", "noemi", "emily", "jaren", "mathias"];
+
+  // Mensajes aleatorios
+  const mensajes = [
+    "🌟 Hoy será un gran día, confía en ti.",
+    "💖 Recuerda que siempre hay alguien que piensa en ti.",
+    "🌈 Las mejores cosas llegan cuando menos lo esperas.",
+    "🔥 Nunca olvides lo especial que eres.",
+    "🌻 La vida sonríe a quienes siguen soñando."
+  ];
+
+  // Poema largo
+  const mensajeEspecial = `
+Uno cree que va por la vida, así,
+sin más,
+juntando ayeres como estampillas viejas,
+transitando por las calles de siempre
+con la vaga certeza
+de que al final del día
+uno es el mismo de la mañana.
+
+Uno se acostumbra, ¿sabes?
+A la soledad de dos tazas de café,
+al silencio que responde cuando no hay nadie,
+a la precaria alegría de un domingo sin lluvia.
+Uno se convence, casi,
+de que eso es todo.
+De que la vida es ese borrador prolijo
+de un poema que nunca se escribe.
+
+Y entonces,
+sin previo aviso,
+sin la ridícula parafernalia de los fuegos artificiales,
+llegas vos.
+
+Llegas y de pronto el caos tiene sentido.
+Llegas y mi brújula, esa vieja testaruda,
+deja de señalar un norte incierto
+para apuntar, con una fe que no le conocía,
+directo a tu sonrisa.
+
+No fue un cataclismo, no.
+Fue algo más hondo, más sereno.
+Fue como entender de golpe
+el idioma de los pájaros
+o el porqué de la melancolía en los tangos.
+Fue darme cuenta
+de que antes de vos,
+yo era apenas un extranjero en mi propia piel.
+
+Ahora, cuando la gente me habla de la suerte,
+de los tréboles de cuatro hojas,
+de las estrellas fugaces,
+yo sonrío por dentro.
+Pobres, no entienden nada.
+
+No saben que mi golpe de fortuna no hizo ruido,
+que mi milagro anda por casa en pijama,
+que mi revolución empieza y termina
+en el simple,
+cotidiano,
+y soberbio hecho
+de haberte conocido.
+Y si eso no es la vida,
+entonces, créeme,
+estuvimos equivocados todo este tiempo.
+`;
+
+  const input = document.getElementById("nombre");
+  let intervalID;
+  let intensity = 5;
+
+  function crearCorazones(tipo, cantidad = 1) {
+    for (let i = 0; i < cantidad; i++) {
+      let heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.textContent = tipo === "correcto" ? "❤️" : "💔";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.fontSize = (16 + Math.random() * 24) + "px";
+      heart.style.animationDuration = (3 + Math.random() * 3) + "s";
+      document.body.appendChild(heart);
+
+      setTimeout(() => { heart.remove(); }, 4000);
+    }
+  }
+
+  function startRain(tipo = "correcto") {
+    if(intervalID) clearInterval(intervalID);
+    intervalID = setInterval(() => {
+      crearCorazones(tipo, intensity);
+    }, 500);
+  }
+
+  input.addEventListener("input", () => {
+    intensity = input.value.length + 3;
+    startRain("correcto");
+  });
+
+  function verificar() {
+    const nombre = input.value.trim().toLowerCase();
+    const mensaje = document.getElementById("mensaje");
+    const texto = document.getElementById("texto");
+
+    if (nombresEspeciales.includes(nombre)) {
+      texto.textContent = mensajeEspecial;
+      document.getElementById("inicio").style.display = "none";
+      document.getElementById("carta").style.display = "block";
+      startRain("correcto");
+
+    } else if (nombresAleatorios.includes(nombre)) {
+      const mensajeRandom = mensajes[Math.floor(Math.random() * mensajes.length)];
+      texto.textContent = mensajeRandom;
+      document.getElementById("inicio").style.display = "none";
+      document.getElementById("carta").style.display = "block";
+      startRain("correcto");
+
+    } else {
+      mensaje.textContent = "❌ Este nombre no está permitido";
+      input.classList.add("error");
+      setTimeout(() => { input.classList.remove("error"); }, 500);
+      startRain("incorrecto");
+    }
+  }
+
+  startRain("correcto");
+</script>
+</body>
+</html>
